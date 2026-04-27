@@ -1,5 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
+import locationRoutes from "./routes/location.routes.js";
+import userRoutes from "./routes/appointment.routes.js";
+import hospitalRoutes from "./routes/hospital.routes.js";
+
 
 const app =  express();
 app.use(express.json());
@@ -7,8 +11,10 @@ dotenv.config();
 
 const PORT = process.env.PORT || 5000;
 
-app.use("/location",);
-app.use("/appointment",);
+app.use("/locations",locationRoutes);
+app.use("/appointment",userRoutes);
+app.use("/appointment",hospitalRoutes);
+
 
 
 
