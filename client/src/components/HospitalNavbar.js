@@ -1,10 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 export default function HospitalNavbar() {
-  const hospitalName =
-    typeof window !== "undefined"
-      ? localStorage.getItem("hospitalName")
-      : "";
+  const [hospitalName, setHospitalName] = useState("");
+
+  useEffect(() => {
+    const name = localStorage.getItem("hospitalName");
+    if (name) setHospitalName(name);
+  }, []);
 
   const handleLogout = () => {
     localStorage.clear();

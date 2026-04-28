@@ -59,7 +59,9 @@ export default function MapView({ searchData, hospitals, selectedHospital, setSe
 
   }, [searchData, hospitals]);
 
-  if (selectedHospital !== null && hospitals[selectedHospital]) {
+  useEffect(() => {
+    if (!mapInstance.current || selectedHospital === null || !searchData) return;
+  
     const h = hospitals[selectedHospital];
   
     const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${searchData.lng},${searchData.lat};${h.longitude},${h.latitude}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
@@ -67,32 +69,39 @@ export default function MapView({ searchData, hospitals, selectedHospital, setSe
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
-        const route = data.routes[0].geometry;
+        const route = {
+          type: "Feature",
+          geometry: data.routes[0].geometry,
+        };
   
-        if (mapInstance.current.getSource("route")) {
-          mapInstance.current.getSource("route").setData(route);
-        } else {
-          mapInstance.current.addSource("route", {
-            type: "geojson",
-            data: route,
-          });
-  
-          mapInstance.current.addLayer({
-            id: "route",
-            type: "line",
-            source: "route",
-            layout: {
-              "line-join": "round",
-              "line-cap": "round",
-            },
-            paint: {
-              "line-width": 4,
-              "line-color": "#2563eb",
-            },
-          });
+        // 🔥 remove old route
+        if (mapInstance.current.getLayer("route")) {
+          mapInstance.current.removeLayer("route");
+          mapInstance.current.removeSource("route");
         }
+  
+        // 🔥 add new route
+        mapInstance.current.addSource("route", {
+          type: "geojson",
+          data: route,
+        });
+  
+        mapInstance.current.addLayer({
+          id: "route",
+          type: "line",
+          source: "route",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-width": 5,
+            "line-color": "#2563eb",
+          },
+        });
       });
-  }
+  
+  }, [selectedHospital]);
 
   return <div ref={mapRef} className="w-full h-full rounded-2xl" />;
 }

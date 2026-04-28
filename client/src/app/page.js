@@ -9,15 +9,16 @@ export default function Home() {
   const [hospitals, setHospitals] = useState([]);
   const [selectedHospital, setSelectedHospital] = useState(null);
 
-  const [bookingStatus, setBookingStatus] = useState(null); // null, "pending", "confirmed", "failed"
+  // ✅ Booking state (fixed + consistent)
+  const [bookingStatus, setBookingStatus] = useState("Pending");
   const [bookingDetails, setBookingDetails] = useState(null);
 
   return (
-    <div className="flex h-screen bg-linear-to-br from-gray-100 to-gray-200">
-      
+    <div className="flex h-screen bg-gradient-to-br from-gray-100 to-gray-200">
+
       {/* Sidebar */}
       <div className="w-[28%] p-2">
-        <div className="h-full rounded-2xl bg-white/70 backdrop-blur-lg shadow-xl border border-white/40 p-3 overflow-hidden">
+        <div className="h-full flex flex-col rounded-2xl bg-white/70 backdrop-blur-lg shadow-xl border border-white/40 p-3 overflow-hidden">
           <Sidebar
             setSearchData={setSearchData}
             hospitals={hospitals}
@@ -35,14 +36,14 @@ export default function Home() {
       {/* Map */}
       <div className="w-[72%] p-2 pl-0">
         <div className="h-full rounded-2xl overflow-hidden shadow-xl">
-          <MapView 
-            searchData={searchData} 
-            hospitals={hospitals} 
+          <MapView
+            searchData={searchData}
+            hospitals={hospitals}
             selectedHospital={selectedHospital}
-            setSelectedHospital={setSelectedHospital}
           />
         </div>
       </div>
+
     </div>
   );
 }

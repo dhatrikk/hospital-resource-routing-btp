@@ -2,13 +2,13 @@
 
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { fetchNearestHospitals } from "../services/api";
 
 export default function SearchForm({ setSearchData, setHospitals }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [service, setService] = useState("");
   const [loading, setLoading] = useState(false);
+  const [coords, setCoords] = useState(null);
   const containerRef = useRef(null);
 
   // outside click to close suggestions
@@ -63,7 +63,8 @@ export default function SearchForm({ setSearchData, setHospitals }) {
     setQuery(place.place_name);
     setSuggestions([]);
 
-    await handleSearch(lat, lng);
+    setSearchData({ lat, lng, service });
+    setCoords({ lat, lng });
   };
 
   // Live location
@@ -76,7 +77,8 @@ export default function SearchForm({ setSearchData, setHospitals }) {
         setQuery("Current Location");
         setSuggestions([]);
 
-        await handleSearch(lat, lng);
+        setSearchData({ lat, lng, service });
+        setCoords({ lat, lng });
       },
       () => alert("Location permission denied")
     );
@@ -84,6 +86,16 @@ export default function SearchForm({ setSearchData, setHospitals }) {
 
   // Search handler
   const handleSearch = async (lat, lng) => {
+    if (!service) {
+      alert("Please select a service");
+      return;
+    }
+
+    if (!lat || !lng) {
+      alert("Location missing");
+      return;
+    }
+    
     setLoading(true);
     try {
       setSearchData({ lat, lng, service });
@@ -153,6 +165,10 @@ export default function SearchForm({ setSearchData, setHospitals }) {
 
       {/* Manual Search Button (fallback) */}
       <button
+        onClick={()=>{
+          if(!coords) return alert("Select Location first");
+          handleSearch(coords.lat, coords.lng);
+        }}
         disabled={loading}
         className="w-full mt-3 bg-linear-to-r from-blue-500 to-blue-600 text-white p-3 rounded-xl shadow-md hover:scale-[1.02] active:scale-[0.98] transition"
       >

@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { updateRequest, getRequests } from "../../store";
 
 export default function RequestsTable({ requests }) {
-  const [data, setData] = useState(requests);
+  const [data, setData] = useState([]);
   const [selected, setSelected] = useState(null);
   const [mode, setMode] = useState(null); // "accept" | "reject"
   const [docName, setDocName] = useState("");
   const [roomNo, setRoomNo] = useState("");
   const [reason, setReason] = useState("");
+
+  useEffect(() => {
+    setData(getRequests());
+  }, [requests]);
 
   const openModal = (index, type) => {
     setSelected(index);
@@ -16,25 +21,25 @@ export default function RequestsTable({ requests }) {
   };
 
   const handleAccept = () => {
-    const updated = [...data];
-    updated[selected] = {
-      ...updated[selected],
+    updateRequest(selected, {
+      status: "Accepted",
       docName,
       roomNo,
-      status: "Accepted",
-    };
-    setData(updated);
+      reponseTime: new Date().toLocaleTimeString(),
+    });
+
+    setData(getRequests());
     closeModal();
   };
 
   const handleReject = () => {
-    const updated = [...data];
-    updated[selected] = {
-      ...updated[selected],
+    updateRequest(selected, {
       status: "Rejected",
       reason,
-    };
-    setData(updated);
+      reponseTime: new Date().toLocaleTimeString(),
+    });
+
+    setData(getRequests());
     closeModal();
   };
 
@@ -48,33 +53,37 @@ export default function RequestsTable({ requests }) {
 
   return (
     <div className="bg-white/80 backdrop-blur rounded-2xl shadow-xl border border-white/30 overflow-hidden">
-
       {/* Table */}
       <table className="w-full text-sm">
-        <thead className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white">
+        <thead className="bg-linear-to-r from-blue-500 to-indigo-500 text-white">
           <tr>
             <th className="p-3">S.No</th>
             <th className="p-3">Patient Type</th>
             <th className="p-3">Doctor</th>
             <th className="p-3">Room</th>
+            <th className="p-3">Request Time</th>
+            {/* <th className="p-3">Response Time</th> */}
             <th className="p-3">Action</th>
           </tr>
         </thead>
 
         <tbody>
           {data.map((r, i) => (
-            <tr
-              key={i}
-              className="border-t hover:bg-blue-50 transition"
-            >
-              <td className="p-3">{i + 1}</td>
-              <td className="p-3">{r.service}</td>
-              <td className="p-3">{r.docName || "-"}</td>
-              <td className="p-3">{r.roomNo || "-"}</td>
+            <tr key={i} className="border-t hover:bg-blue-50">
+              <td className="p-3 text-center">{i + 1}</td>
+              <td className="p-3 text-center">{r.service}</td>
+              <td className="p-3 text-center">{r.docName || "-"}</td>
+              <td className="p-3 text-center">{r.roomNo || "-"}</td>
+              <td className="p-3 text-center text-sm text-gray-600">
+                {r.requestTime || "-"}
+              </td>
+              {/* <td className="p-3 text-center text-sm text-gray-600">
+                {r.responseTime || "-"}
+              </td> */}
 
-              <td className="p-3 flex gap-2">
+              <td className="p-3 text-center">
                 {r.status === "Pending" ? (
-                  <>
+                  <div className="flex justify-center gap-2">
                     <button
                       onClick={() => openModal(i, "accept")}
                       className="bg-green-500 text-white px-3 py-1 rounded-lg shadow hover:scale-105 transition"
@@ -88,13 +97,11 @@ export default function RequestsTable({ requests }) {
                     >
                       Reject
                     </button>
-                  </>
+                  </div>
                 ) : (
                   <span
                     className={`px-2 py-1 rounded text-white text-xs ${
-                      r.status === "Accepted"
-                        ? "bg-green-500"
-                        : "bg-red-500"
+                      r.status === "Accepted" ? "bg-green-500" : "bg-red-500"
                     }`}
                   >
                     {r.status}
@@ -109,8 +116,7 @@ export default function RequestsTable({ requests }) {
       {/* Modal */}
       {mode && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-[300px] shadow-xl">
-
+          <div className="bg-white p-6 rounded-xl w-75 shadow-xl">
             {mode === "accept" ? (
               <>
                 <h2 className="font-semibold mb-3">Assign Details</h2>
