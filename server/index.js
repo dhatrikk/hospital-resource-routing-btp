@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import locationRoutes from "./routes/location.routes.js";
-import userRoutes from "./routes/appointment.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import hospitalRoutes from "./routes/hospital.routes.js";
 
 
@@ -17,8 +17,8 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 
 app.use("/locations",locationRoutes);
-app.use("/appointment",userRoutes);
-app.use("/appointment",hospitalRoutes);
+app.use("/user",userRoutes);
+app.use("/hospital",hospitalRoutes);
 
 
 

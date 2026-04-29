@@ -6,7 +6,6 @@ import {
 
 const router = express.Router();
 
-router.get("/hospital/:hospitalId", getHospitalAppointments);
-router.patch("/:id", updateAppointmentStatus);
-
+router.get("/:hospitalId", getHospitalAppointments);
+router.patch("/:bookingId", updateAppointmentStatus);
 export default router;
