@@ -81,7 +81,7 @@ export const updateAppointmentStatus = async (req, res) => {
 
     // update appointment
     const updated = await prisma.appointments.update({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(bookingId) },
       data: {
         status,
         reason: status === "rejected" ? reason : null,
