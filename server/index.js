@@ -9,8 +9,12 @@ import hospitalRoutes from "./routes/hospital.routes.js";
 const app =  express();
 app.use(express.json());
 app.use(cors({
-    origin:"https://main.d2hq3ta0u12dgn.amplifyapp.com",
-    credentials:true,
+  origin: [
+    "https://main.d2hq3ta0u12dgn.amplifyapp.com",
+    "http://localhost:3000",
+    "https://main.d3vhubercu3jih.amplifyapp.com/"
+  ],
+  credentials: true,
 }));
 dotenv.config();
 
