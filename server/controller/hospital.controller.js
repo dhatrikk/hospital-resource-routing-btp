@@ -8,7 +8,7 @@ export const getHospitalAppointments = async (req, res) => {
     const id = parseInt(hospitalId);
 
     // 1. Fetch hospital name
-    const hospital = await prisma.hospital.findUnique({
+    const hospital = await prisma.hospitals.findUnique({
       where: { id },
       select: { name: true },
     });
