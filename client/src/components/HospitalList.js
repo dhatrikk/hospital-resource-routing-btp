@@ -1,137 +1,123 @@
 "use client";
 
-import { addRequest, getRequests } from "../../store";
-import { useState, useEffect } from "react";
+import { useState } from "react";  
 
 export default function HospitalList({
   hospitals,
-  setSelectedHospital,
   selectedHospital,
+  setSelectedHospital,
+  selectedService,
 }) {
   const [bookedIndex, setBookedIndex] = useState(null);
-  const [bookingStatus, setBookingStatus] = useState("Pending");
-  const [bookingDetails, setBookingDetails] = useState(null);
+  const [status, setStatus] = useState("Pending");
+  const [details, setDetails] = useState(null);
 
-  // Poll for updates
-  useEffect(() => {
-    if (bookedIndex === null) return;
+  const handleBook = async (hospital, index) => {
+    try {
+      const res = await fetch("https://hospital-resource-routing-sxdu.onrender.com/user/appointment",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            hospitalId: hospital.id,
+            service: selectedService,
+          }),
+        }
+      );
 
-    const interval = setInterval(() => {
-      const data = getRequests();
-      const myRequest = data.filter(
-        (r) => r.hospitalName === hospitals[bookedIndex]?.name
-      )[0];
-      console.log("Polling:", myRequest);
-      if (!myRequest) return;
-
-      // update details
-      setBookingDetails(myRequest);
-
-      if (myRequest.status !== "bookingStatus") {
-        setBookingStatus(myRequest.status);
+      if (!res.ok) {
+        const err = await res.text();
+        console.error("Server error:", err);
+        return;
       }
-    }, 1500);
-
-    return () => clearInterval(interval);
-  }, [bookedIndex, hospitals]);
-
-  // Booking
-  const handleBook = (hospital, index) => {
-    const time = new Date().toLocaleTimeString();
-
-    addRequest({
-      hospitalName: hospital.name,
-      service: "Beds",
-      requestTime: time,
-      responseTime: "",
-      status: "Pending",
-      docName: "",
-      roomNo: "",
-      reason: "",
-    });
-
-    setBookedIndex(index);
-    setBookingStatus("Pending");
-    setBookingDetails(null);
+  
+      const data = await res.json();
+      console.log("Inserted:", data);
+  
+      setBookedIndex(index);
+      setStatus("pending");
+  
+    } catch (err) {
+      console.error("Booking failed:", err);
+    }
   };
 
   return (
-    <div className="space-y-3">
-      {hospitals.map((h, index) => {
-        // show only selected after booking
-        if (bookedIndex !== null && bookedIndex !== index) return null;
-
-        const isBooked = bookedIndex === index;
-
+    <div className="space-y-4">
+      {hospitals.map((h, i) => {
+        if (bookedIndex !== null && bookedIndex !== i)
+          return null;
+  
+        const isActive = selectedHospital === i;
+  
         return (
           <div
-            key={index}
-            onClick={() => setSelectedHospital(index)}
-            className={`p-4 rounded-xl border transition ${
-              isBooked
-                ? "bg-yellow-50 border-yellow-400 shadow-md"
-                : "bg-white border-gray-100"
-            }`}
+            key={i}
+            onClick={() => setSelectedHospital(i)}
+            className={`
+              cursor-pointer
+              rounded-xl
+              p-4
+              border
+              transition-all
+              duration-300
+              ${isActive
+                ? "bg-blue-50 border-blue-500 shadow-xl"
+                : "bg-white shadow-md hover:shadow-xl "
+              }
+            `}
           >
-            <h2 className="font-semibold">{h.name}</h2>
-
-            {/* BEFORE BOOK */}
-            {!isBooked && (
-              <>
-                <p>Available: {h.available}</p>
-                <p>Distance: {Math.round(h.distance)} m</p>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // 🔥 prevents map click conflict
-                    handleBook(h, index);
+            {/* Header */}
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-sm font-semibold text-gray-800">
+                {h.name}
+              </h3>
+            </div>
+  
+            {/* Distance */}
+            <div className="flex items-center justify-between text-gray-600 text-sm mb-3">
+              <span>Distance: {Number(h.distance*11100).toFixed(2)} km</span>
+              <span className="text-sm bg-green-100 text-green-700 px-2 py-1 rounded-md">
+              {h.available} available
+              </span>
+            </div>
+          
+            {/* book appointment button */}
+            {bookedIndex !== i && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                    handleBook(h, i);
                   }}
-                  className="mt-2 w-full bg-blue-600 text-white py-2 rounded"
-                >
+                  className="w-full text-white py-2 hover:shadow-lg bg-linear-to-r from-blue-500 to-blue-600 rounded-lg shadow-md transition-all cursor-pointer"
+                  >
                   Book Appointment
-                </button>
-              </>
-            )}
-
-            {/* AFTER BOOK */}
-            {isBooked && (
-              <div className="mt-2 text-yellow-700">
-                <p className="font-semibold">
-                  {bookingStatus === "Accepted"
-                    ? "✅ Accepted"
-                    : bookingStatus === "Rejected"
-                    ? "❌ Rejected"
-                    : "⏳ Waiting for Confirmation..."}
-                </p>
-
-                <p className="text-sm">Service: Beds</p>
-                <p className="text-sm">
-                  Requested at: {bookingDetails?.requestTime}
-                </p>
-
-                {bookingStatus === "Accepted" && (
-                  <>
-                    <p className="text-sm">
-                      Doctor: {bookingDetails?.docName}
-                    </p>
-                    <p className="text-sm">
-                      Room: {bookingDetails?.roomNo}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Response: {bookingDetails?.responseTime}
-                    </p>
-                  </>
+                  </button>
                 )}
 
-                {bookingStatus === "Rejected" && (
-                  <>
-                    <p className="text-sm">
-                      Reason: {bookingDetails?.reason}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Response: {bookingDetails?.responseTime}
-                    </p>
-                  </>
+                {/* Status */}
+            {bookedIndex === i && (
+              <div className="mt-3 p-3 rounded-lg bg-gray-50 border">
+                <p className="font-medium">
+                  Status:{" "}
+                  <span
+                    className={
+                      status === "accepted"
+                        ? "text-green-400"
+                        : status === "rejected"
+                        ? "text-red-400"
+                        : "text-yellow-400"
+                    }
+                  >
+                    {status}
+                  </span>
+                </p>  
+                {status === "rejected" && (
+                  <p className="mt-2 text-sm text-red-500">
+                    Reason: {details?.reason}
+                  </p>
                 )}
               </div>
             )}
