@@ -38,7 +38,7 @@ export const getHospitalAppointments = async (req, res) => {
 
 export const updateAppointmentStatus = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { bookingId } = req.params;
     const { status, reason } = req.body;
 
     if (!["accepted", "rejected"].includes(status)) {
@@ -47,7 +47,7 @@ export const updateAppointmentStatus = async (req, res) => {
 
     // get appointment first
     const appointment = await prisma.appointments.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(bookingId) },
     });
 
     if (!appointment) {
