@@ -5,17 +5,30 @@ const prisma = new PrismaClient();
 export const getHospitalAppointments = async (req, res) => {
   try {
     const { hospitalId } = req.params;
+    const id = parseInt(hospitalId);
 
-    const data = await prisma.appointments.findMany({
-      where: {
-        hospitalId: parseInt(hospitalId),
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+    // 1. Fetch hospital name
+    const hospital = await prisma.hospital.findUnique({
+      where: { id },
+      select: { name: true },
     });
 
-    return res.status(200).json(data);
+    if (!hospital) {
+      return res.status(404).json({ message: "Hospital not found" });
+    }
+
+    // 2. Fetch appointments
+    const appointments = await prisma.appointments.findMany({
+      where: { hospitalId: id },
+      orderBy: { createdAt: "desc" },
+    });
+
+    // 3. Send structured response
+    return res.status(200).json({
+      hospitalName: hospital.name,
+      appointments,
+    });
+
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server error" });
