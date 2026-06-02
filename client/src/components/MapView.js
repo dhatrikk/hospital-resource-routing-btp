@@ -32,7 +32,7 @@ export default function MapView({
     const fetchAll = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/locations`
+          "https://hospital-resource-routing-sxdu.onrender.com/locations"
         );
         const data = await res.json();
         setAllHospitals(data);
