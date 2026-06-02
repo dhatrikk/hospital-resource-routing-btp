@@ -12,7 +12,8 @@ app.use(cors({
   origin: [
     "https://main.d2hq3ta0u12dgn.amplifyapp.com",
     "http://localhost:3000",
-    "https://main.d3vhubercu3jih.amplifyapp.com/"
+    "https://main.d3vhubercu3jih.amplifyapp.com/",
+    "https://main.d33b18ju9ag449.amplifyapp.com/"
   ],
   credentials: true,
 }));
